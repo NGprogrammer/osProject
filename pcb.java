@@ -11,7 +11,30 @@ public class pcb {
 	
 	public int maxCpuTime;
 	
-	public int currentTime;
+	public int timeOnCreate;
+        
+        public int timeLeft;
+        
+        public int timeInCPU;
+        
+        public int timeEnterCPU;
+        
+        public int posInMemory;
+        
+        public boolean RUNNING;
+        
+        public boolean INMEMORY;
+        
+        public boolean DOINGIO;
+        
+        public boolean SWAPPING;
+        
+        public boolean BLOCKED;
+        
+        public boolean KILLED;
+        
+        public boolean REQUESTIO;
+        
 	/**
 	 * This function initialize the variables from the ??? i forgot 
 	 * @param arr
@@ -24,9 +47,27 @@ public class pcb {
 
 		jobsize = arr[3];
 
-		maxCpuTime = arr[4];
+		maxCpuTime = timeLeft = arr[4];
 
-		currentTime = arr[5];
+		timeOnCreate = arr[5];
+                
+                timeInCPU = -1;
+                
+                timeEnterCPU = -1;
+                
+                posInMemory = -1;
+                
+                RUNNING = false;
+                
+                INMEMORY = false;
+                
+                DOINGIO = false;
+                
+                SWAPPING = false;
+                
+                KILLED = false;
+                
+                REQUESTIO = false;
 	}
 
 }
