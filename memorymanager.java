@@ -21,10 +21,10 @@ public class memorymanager {
         fsTable.clear(); //makes sure last table's contents are gone
         int FSbegin = -1;
         int FSend = -1;
-        for(int i = 0; i < MAX_SIZE;){
+        for(int i = 0; i < MAX_SIZE-1;){
             if(memory.get(i) == 0){
                 FSbegin = i;
-                while(memory.get(i) != 1 && i < MAX_SIZE){
+                while(memory.get(i) != 1 && i < MAX_SIZE-1){
                     i++;
                 }
                 FSend = i-1; //i-1 because i's value is 1 past the end of the free space
@@ -50,6 +50,9 @@ public class memorymanager {
             for(int i = freeSpacePos; i < freeSpacePos+jobSize; i++){
                 memory.set(i, 1);
             }
+//            for(int k = 0; k < memory.size()-1; k++){
+//                System.out.print(memory.get(k) + " " );
+//            }
             return freeSpacePos;
         }
         return -1;

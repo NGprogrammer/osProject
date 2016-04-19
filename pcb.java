@@ -31,7 +31,7 @@ public class pcb {
         
         public boolean BLOCKED;
         
-        public boolean KILLED;
+        public boolean KILL;
         
         public boolean REQUESTIO;
         
@@ -65,7 +65,7 @@ public class pcb {
                 
                 SWAPPING = false;
                 
-                KILLED = false;
+                KILL = false;
                 
                 REQUESTIO = false;
 	}
