@@ -32,12 +32,18 @@ public class memorymanager {
 				for (int j = i; j < MAX_SIZE; j++) {
 					if (memory.get(j) == 0)
 						FSend = j;
+					else if(memory.get(j) == 1){ //End of free space
+						break; //Break out because it found the end of free space
+					}
 				}
+				i = FSend; //To move i to the end of free space so it can look for the next one
 			}
 			if (FSbegin != -1 && FSend != -1) {
-				fsTable.put(FSbegin, FSend);
-				break;
-			}
+				fsTable.put(FSbegin, FSend-FSbegin+1); //The second value is not the end of free space but the size of it
+				//break; Got rid of this because if there were more free spaces then it 
+				//would not find them if you break after you find the first one
+				//example 0000110000 if you break after finding first 4 then you won't get to the last 4
+ 			}
 		}
 		// Prints out the contents of FST
 		for (Map.Entry<Integer, Integer> entry : fsTable.entrySet()) {
@@ -68,7 +74,7 @@ public class memorymanager {
 			for (int i = freeSpacePos; i < freeSpacePos+jobSize; i++) {
 				memory.set(i, 1);
 			}
-			for(int k = 0; k < memory.size()-1; k++){
+			for(int k = 0; k < memory.size(); k++){
 			    System.out.print(memory.get(k) + " " );
 			}
 			return freeSpacePos;
