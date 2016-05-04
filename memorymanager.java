@@ -17,8 +17,8 @@ public class memorymanager {
 		fsTable = new TreeMap<>();
 	}
 
-	/* Locates where in memory there is free space and puts the starting
-	 * value(address) as the key and ending address as the value(address) in a TreeMap
+	/* Locates where in memory there is free space and puts the free space size
+	as the key and the address of the free space as the value.
 	 */
 	private void fillFreeSpaceTable() {
 		System.out.println("in fst");
@@ -32,22 +32,22 @@ public class memorymanager {
 				for (int j = i; j < MAX_SIZE; j++) {
 					if (memory.get(j) == 0)
 						FSend = j;
-					else if(memory.get(j) == 1){ //End of free space
+					else if(memory.get(j) == 1) { //End of free space
 						break; //Break out because it found the end of free space
 					}
 				}
 				i = FSend; //To move i to the end of free space so it can look for the next one
 			}
 			if (FSbegin != -1 && FSend != -1) {
-				fsTable.put(FSbegin, FSend-FSbegin+1); //The second value is not the end of free space but the size of it
-				//break; Got rid of this because if there were more free spaces then it 
+				fsTable.put(FSend-FSbegin+1, FSbegin); //The second value is not the end of free space but the size of it
+				//break; Got rid of this because if there were more free spaces then it
 				//would not find them if you break after you find the first one
 				//example 0000110000 if you break after finding first 4 then you won't get to the last 4
  			}
 		}
 		// Prints out the contents of FST
 		for (Map.Entry<Integer, Integer> entry : fsTable.entrySet()) {
-			System.out.println("Free space at starting: " + entry.getKey() + " ending: " + entry.getValue());
+			System.out.println("Free space at starting: " + entry.getKey() + " free space left: " + entry.getValue());
 		}
 	}
 
@@ -56,8 +56,8 @@ public class memorymanager {
 	 */
 	public int findFreeSpace(int jobSize) {
 		for (Map.Entry<Integer, Integer> entry : fsTable.entrySet()) {
-			if (entry.getValue() >= jobSize)
-				return entry.getKey();
+			if (entry.getKey() >= jobSize)
+				return entry.getValue();
 		}
 		return -1;
 	}
@@ -74,9 +74,9 @@ public class memorymanager {
 			for (int i = freeSpacePos; i < freeSpacePos+jobSize; i++) {
 				memory.set(i, 1);
 			}
-			for(int k = 0; k < memory.size(); k++){
-			    System.out.print(memory.get(k) + " " );
-			}
+			// for(int k = 0; k < memory.size(); k++){
+			//     System.out.print(memory.get(k) + " " );
+			// }
 			return freeSpacePos;
 		}
 		return -1;

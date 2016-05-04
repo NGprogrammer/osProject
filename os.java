@@ -113,7 +113,7 @@ public class os {
 		}
 		return runningJobPos; //-1 if no running job
 	}
-
+	/* Assigns the info from CPUScheduler so that the sos can run the job */
 	public static void runOnCPU(int[] a, int[] p) {
 		Swapper();
 		int jobTablePos = CPUScheduler();
@@ -175,15 +175,21 @@ public class os {
 
 	public static int CPUScheduler() {
 		System.out.println("in CPUScheduler");
+		int shortestRemainingTime = 999999;
+		int shortestJobPos = -1;
 		if (jobtable.isEmpty()) {
 			return -1;
 		} else {
 			for (int i = 0; i < jobtable.size(); i++) {
-				if (jobtable.get(i).INMEMORY && !jobtable.get(i).BLOCKED)
-					return i;
+				if (jobtable.get(i).INMEMORY && !jobtable.get(i).BLOCKED){
+						if(jobtable.get(i).timeLeft < shortestRemainingTime){
+							shortestRemainingTime = jobtable.get(i).timeLeft;
+							shortestJobPos = i;
+						}
+				}
 			}
+			return shortestJobPos;
 		}
-		return -1;
 	}
 
 	public static void Swapper() {
@@ -199,11 +205,17 @@ public class os {
 					swapIn = true;
 					job.SWAPPING = true;
 				}
-				if (job.INMEMORY && !job.DOINGIO && job.BLOCKED) {
-					sos.siodrum(job.jobnum, job.jobsize, job.posInMemory, 1);
-					memory.removeFromMemory(job.posInMemory, job.jobsize);
-					swapOut = true;
-					job.SWAPPING = true;
+			}
+			if(startingAddress == -1){
+				System.out.println("in SwapperOut");
+				for(int i = 0; i < IOQueue.size(); i++){
+					pcb job = IOQueue.get(i);
+					if (job.INMEMORY && !job.DOINGIO && job.BLOCKED) {
+						sos.siodrum(job.jobnum, job.jobsize, job.posInMemory, 1);
+						memory.removeFromMemory(job.posInMemory, job.jobsize);
+						swapOut = true;
+						job.SWAPPING = true;
+					}
 				}
 			}
 		}
