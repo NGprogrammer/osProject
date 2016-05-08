@@ -200,10 +200,12 @@ public class os {
 				pcb job = jobtable.get(i);
 				if (!jobtable.get(i).INMEMORY) {
 					startingAddress = memory.allocateMemory(job.jobsize);
-					sos.siodrum(job.jobnum, job.jobsize, startingAddress, 0);
-					job.posInMemory = startingAddress;
-					swapIn = true;
-					job.SWAPPING = true;
+					if(startingAddress != -1){
+						sos.siodrum(job.jobnum, job.jobsize, startingAddress, 0);
+						job.posInMemory = startingAddress;
+						swapIn = true;
+						job.SWAPPING = true;
+					}
 				}
 			}
 			if(startingAddress == -1){
