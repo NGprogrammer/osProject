@@ -8,24 +8,25 @@ public class os {
 	public static memorymanager memory;
 	public static boolean swapIn, swapOut, doingIO;
 
+	/* Initializing the system variables declared above */
 	public static void startup() {
 		jobtable = new ArrayList<>(50);
 		memory = new memorymanager();
 		IOQueue = new LinkedList<>();
 		swapIn = false;
 		swapOut = false;
-		sos.ontrace();
+		sos.offtrace();
 	}
 
+	/* Indicates a new job has arrived on the drum */
 	public static void Crint(int []a, int []p) {
-		System.out.println("in crint");
 		bookKeep(p[5]);
 		jobtable.add(new pcb(p));
 		runOnCPU(a, p);
 	}
 
+	/* Disk interrupt, finish I/O */
 	public static void Dskint(int []a, int []p) {
-		System.out.println("in dskint");
 		bookKeep(p[5]);
 		doingIO = false;
 		pcb IOJob = jobtable.get(findIOJob());
@@ -40,7 +41,6 @@ public class os {
 	}
 
 	public static void Drmint(int []a, int []p) {
-		System.out.println("in drmint");
 		bookKeep(p[5]);
 		if (swapIn) {
 			swapIn = false;
@@ -66,11 +66,14 @@ public class os {
 	}
 
 	public static void Tro(int[] a, int []p) {
-		System.out.println("in Tro");
 		int interruptedJobPos = bookKeep(p[5]);
 		pcb interruptedJob = jobtable.get(interruptedJobPos);
-		if (interruptedJob.timeLeft == 0)
-			terminateJob(interruptedJobPos);
+		if (interruptedJob.timeLeft == 0){
+			if(interruptedJob.DOINGIO || interruptedJob.REQUESTIO)
+				interruptedJob.KILL = true;
+			else
+				terminateJob(interruptedJobPos);
+		}
 		runOnCPU(a, p);
 	}
 
@@ -79,11 +82,11 @@ public class os {
 		pcb interruptedJob = jobtable.get(posInterruptedJob);
 		bookKeep(p[5]);
 		int status = a[0];
-		System.out.println("in Svc with code " + status);
 		switch(status) {
 			case 5 :
-				if (interruptedJob.REQUESTIO || interruptedJob.DOINGIO)
+				if (interruptedJob.REQUESTIO || interruptedJob.DOINGIO) {
 					interruptedJob.KILL = true;
+				}
 				else
 					terminateJob(posInterruptedJob);
 				break;
@@ -94,7 +97,7 @@ public class os {
 					runIO();
 				break;
 			case 7 :
-				if (interruptedJob.DOINGIO && interruptedJob.REQUESTIO)
+				if (interruptedJob.REQUESTIO)
 					interruptedJob.BLOCKED = true;
 				break;
 		}
@@ -113,6 +116,7 @@ public class os {
 		}
 		return runningJobPos; //-1 if no running job
 	}
+
 	/* Assigns the info from CPUScheduler so that the sos can run the job */
 	public static void runOnCPU(int[] a, int[] p) {
 		Swapper();
@@ -130,10 +134,13 @@ public class os {
 		}
 	}
 
+	/* function to allow the job to do IO */
 	public static void runIO() {
 		if (!doingIO) {
 			if (!IOQueue.isEmpty()) {
 				for (pcb job : IOQueue) {
+					if(!job.INMEMORY)
+						Swapper();
 					if (job.INMEMORY) {
 						sos.siodisk(job.jobnum);
 						IOQueue.remove(job);
@@ -147,6 +154,7 @@ public class os {
 		}
 	}
 
+	/* If a job is currently running, return the address of that job */
 	public static int findRunningJob() {
 		int jobtablePos = -1;
 		for (int i = 0; i < jobtable.size(); i++) {
@@ -156,15 +164,20 @@ public class os {
 		return jobtablePos;
 	}
 
+	/* Locate job that is doing io */
 	public static int findIOJob() {
 		int jobtablePos = -1;
 		for(int i = 0; i < jobtable.size(); i++) {
 			if(jobtable.get(i).DOINGIO)
 				jobtablePos = i;
 		}
-		return jobtablePos;
+		if(jobtablePos != -1)
+			return jobtablePos;
+		else
+			return -1;
 	}
 
+	/* Locates the position of the job in the job table */
 	public static int findJobTablePos(int jobNum) {
 		for (int i = 0; i < jobtable.size(); i++) {
 			if (jobtable.get(i).jobnum == jobNum)
@@ -173,15 +186,16 @@ public class os {
 		return -1;
 	}
 
+	/* Determines which job to run on the CPU that is ready to run */
 	public static int CPUScheduler() {
-		System.out.println("in CPUScheduler");
 		int shortestRemainingTime = 999999;
 		int shortestJobPos = -1;
 		if (jobtable.isEmpty()) {
 			return -1;
 		} else {
 			for (int i = 0; i < jobtable.size(); i++) {
-				if (jobtable.get(i).INMEMORY && !jobtable.get(i).BLOCKED){
+				pcb job = jobtable.get(i);
+				if (job.INMEMORY && !job.BLOCKED && !job.KILL){
 						if(jobtable.get(i).timeLeft < shortestRemainingTime){
 							shortestRemainingTime = jobtable.get(i).timeLeft;
 							shortestJobPos = i;
@@ -192,8 +206,10 @@ public class os {
 		}
 	}
 
+	/* Determines if job is not in memory to be placed in memory
+ 	 * Also swap jobs out which are idle for another job
+ 	*/
 	public static void Swapper() {
-		System.out.println("in Swapper");
 		int startingAddress = -1;
 		if (!swapIn && !swapOut) {
 			for (int i = 0; i < jobtable.size(); i++) {
@@ -205,11 +221,11 @@ public class os {
 						job.posInMemory = startingAddress;
 						swapIn = true;
 						job.SWAPPING = true;
+						break;
 					}
 				}
 			}
-			if(startingAddress == -1){
-				System.out.println("in SwapperOut");
+			if (startingAddress == -1) {
 				for(int i = 0; i < IOQueue.size(); i++){
 					pcb job = IOQueue.get(i);
 					if (job.INMEMORY && !job.DOINGIO && job.BLOCKED) {
@@ -217,12 +233,15 @@ public class os {
 						memory.removeFromMemory(job.posInMemory, job.jobsize);
 						swapOut = true;
 						job.SWAPPING = true;
+						job.INMEMORY = false;
+						break;
 					}
 				}
 			}
 		}
 	}
 
+	/* Occurs when a job is finished or request to be terminated */
 	public static void terminateJob(int jobTablePos) {
 		pcb Job = jobtable.get(jobTablePos);
 		memory.removeFromMemory(Job.posInMemory, Job.jobsize);

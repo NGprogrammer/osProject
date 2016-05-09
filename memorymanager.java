@@ -9,7 +9,6 @@ public class memorymanager {
 	public static final int MAX_SIZE = 100;
 	private ArrayList<Integer> memory;
 	private TreeMap<Integer, Integer> fsTable;
-	/* Using FirstFit so key is address of FS and value is size of FS */
 
 	public memorymanager() {
 		/* Initialize memory with 0's representing free space */
@@ -18,13 +17,13 @@ public class memorymanager {
 	}
 
 	/* Locates where in memory there is free space and puts the free space size
-	as the key and the address of the free space as the value.
+	 * as the key and the address of the free space as the value.
 	 */
 	private void fillFreeSpaceTable() {
-		System.out.println("in fst");
 		fsTable.clear(); // Clears the contents of the FST
 		int FSbegin = -1;
 		int FSend = -1;
+		/* Loop to find where the free space begins and the size of it */
 		for (int i = 0; i < MAX_SIZE; i++) {
 			if (memory.get(i) == 0) {
 				FSbegin = i;
@@ -32,22 +31,16 @@ public class memorymanager {
 				for (int j = i; j < MAX_SIZE; j++) {
 					if (memory.get(j) == 0)
 						FSend = j;
-					else if(memory.get(j) == 1) { //End of free space
-						break; //Break out because it found the end of free space
+					else if (memory.get(j) == 1) { // End of free space
+						break; // Break out because it found the end of free space
 					}
 				}
-				i = FSend; //To move i to the end of free space so it can look for the next one
+				i = FSend; // Set i to the end of free space so it can look for the next one
 			}
+			/* Place the free space onto the table */
 			if (FSbegin != -1 && FSend != -1) {
-				fsTable.put(FSend-FSbegin+1, FSbegin); //The second value is not the end of free space but the size of it
-				//break; Got rid of this because if there were more free spaces then it
-				//would not find them if you break after you find the first one
-				//example 0000110000 if you break after finding first 4 then you won't get to the last 4
+				fsTable.put(FSend-FSbegin+1, FSbegin);
  			}
-		}
-		// Prints out the contents of FST
-		for (Map.Entry<Integer, Integer> entry : fsTable.entrySet()) {
-			System.out.println("Free space at starting: " + entry.getKey() + " free space left: " + entry.getValue());
 		}
 	}
 
@@ -64,19 +57,13 @@ public class memorymanager {
 
 	/* Process of allocating memory for the current jobSize */
 	public int allocateMemory(int jobSize) {
-		System.out.println("I'm in allocateMemory");
+		// Before allocating memory we call this function determine where there is free space
 		fillFreeSpaceTable();
 		int freeSpacePos = findFreeSpace(jobSize);
-			System.out.println("****Error in allocateMemory****");
-			System.out.println("freeSpacePos = " + freeSpacePos + " jobSize = " + jobSize);
-			System.out.println("****Not enough room for this job****");
 		if (freeSpacePos != -1) {
 			for (int i = freeSpacePos; i < freeSpacePos+jobSize; i++) {
 				memory.set(i, 1);
 			}
-			// for(int k = 0; k < memory.size(); k++){
-			//     System.out.print(memory.get(k) + " " );
-			// }
 			return freeSpacePos;
 		}
 		return -1;

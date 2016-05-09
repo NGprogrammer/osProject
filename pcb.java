@@ -19,9 +19,8 @@ public class pcb {
 	public boolean BLOCKED;
 	public boolean KILL;
 	public boolean REQUESTIO;
-	/**
-	 * This function initialize the variables from the ??? i forgot
-	 * @param arr
+	/*
+	 * This function initialize the variables above
 	 */
 	public pcb(int [] arr) {
 		jobnum = arr[1];
