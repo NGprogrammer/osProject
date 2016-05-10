@@ -179,7 +179,7 @@ public class os
 	public static void runIO() 
 	{
 		if (!doingIO) {
-			if (!I-OQueue.isEmpty()) {
+			if (!IOQueue.isEmpty()) {
 				for (pcb job : IOQueue) {
 					if(!job.INMEMORY)
 						Swapper();
