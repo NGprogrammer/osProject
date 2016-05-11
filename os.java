@@ -33,9 +33,8 @@ public class os {
 		IOJob.DOINGIO = false;
 		IOJob.BLOCKED = false;
 		IOJob.REQUESTIO = false;
-		if (IOJob.KILL) {
+		if (IOJob.KILL)
 			terminateJob(findJobTablePos(IOJob.jobnum));
-		}
 		runIO();
 		runOnCPU(a, p);
 	}
@@ -65,11 +64,12 @@ public class os {
 		runOnCPU(a, p);
 	}
 
+	/* Occurs when a job is to be terminated */
 	public static void Tro(int[] a, int []p) {
 		int interruptedJobPos = bookKeep(p[5]);
 		pcb interruptedJob = jobtable.get(interruptedJobPos);
-		if (interruptedJob.timeLeft == 0){
-			if(interruptedJob.DOINGIO || interruptedJob.REQUESTIO)
+		if (interruptedJob.timeLeft == 0) {
+			if (interruptedJob.DOINGIO || interruptedJob.REQUESTIO)
 				interruptedJob.KILL = true;
 			else
 				terminateJob(interruptedJobPos);
@@ -82,18 +82,17 @@ public class os {
 		pcb interruptedJob = jobtable.get(posInterruptedJob);
 		bookKeep(p[5]);
 		int status = a[0];
-		switch(status) {
+		switch (status) {
 			case 5 :
-				if (interruptedJob.REQUESTIO || interruptedJob.DOINGIO) {
+				if (interruptedJob.REQUESTIO)
 					interruptedJob.KILL = true;
-				}
 				else
 					terminateJob(posInterruptedJob);
 				break;
 			case 6 :
 				interruptedJob.REQUESTIO = true;
 				IOQueue.add(interruptedJob);
-				if (!IOQueue.isEmpty() && !doingIO)
+				if (!IOQueue.isEmpty())
 					runIO();
 				break;
 			case 7 :
@@ -106,15 +105,14 @@ public class os {
 
 	public static int bookKeep(int currTime) {
 		int runningJobPos = findRunningJob();
-		if(runningJobPos != -1 && jobtable.get(runningJobPos).RUNNING) {
+		if (runningJobPos != -1 && jobtable.get(runningJobPos).RUNNING) {
 			pcb runningJob = jobtable.get(runningJobPos);
 			runningJob.RUNNING = false;
 			runningJob.timeInCPU = currTime - runningJob.timeEnterCPU;
 			runningJob.timeLeft = runningJob.timeLeft - runningJob.timeInCPU;
-			// runningJob.maxCpcuTime-=runningJob.timeInCPU;
-			return runningJobPos; //pos of interrupted running job
+			return runningJobPos; // pos of interrupted running job
 		}
-		return runningJobPos; //-1 if no running job
+		return runningJobPos; // -1 if no running job
 	}
 
 	/* Assigns the info from CPUScheduler so that the sos can run the job */
@@ -139,8 +137,6 @@ public class os {
 		if (!doingIO) {
 			if (!IOQueue.isEmpty()) {
 				for (pcb job : IOQueue) {
-					if(!job.INMEMORY)
-						Swapper();
 					if (job.INMEMORY) {
 						sos.siodisk(job.jobnum);
 						IOQueue.remove(job);
@@ -167,14 +163,11 @@ public class os {
 	/* Locate job that is doing io */
 	public static int findIOJob() {
 		int jobtablePos = -1;
-		for(int i = 0; i < jobtable.size(); i++) {
-			if(jobtable.get(i).DOINGIO)
+		for (int i = 0; i < jobtable.size(); i++) {
+			if (jobtable.get(i).DOINGIO)
 				jobtablePos = i;
 		}
-		if(jobtablePos != -1)
-			return jobtablePos;
-		else
-			return -1;
+		return jobtablePos;
 	}
 
 	/* Locates the position of the job in the job table */
@@ -195,11 +188,11 @@ public class os {
 		} else {
 			for (int i = 0; i < jobtable.size(); i++) {
 				pcb job = jobtable.get(i);
-				if (job.INMEMORY && !job.BLOCKED && !job.KILL){
-						if(jobtable.get(i).timeLeft < shortestRemainingTime){
-							shortestRemainingTime = jobtable.get(i).timeLeft;
-							shortestJobPos = i;
-						}
+				if (job.INMEMORY && !job.BLOCKED && !job.KILL) {
+					if (job.timeLeft < shortestRemainingTime) {
+						shortestRemainingTime = job.timeLeft;
+						shortestJobPos = i;
+					}
 				}
 			}
 			return shortestJobPos;
@@ -214,9 +207,9 @@ public class os {
 		if (!swapIn && !swapOut) {
 			for (int i = 0; i < jobtable.size(); i++) {
 				pcb job = jobtable.get(i);
-				if (!jobtable.get(i).INMEMORY) {
+				if (!job.INMEMORY) {
 					startingAddress = memory.allocateMemory(job.jobsize);
-					if(startingAddress != -1){
+					if (startingAddress != -1) {
 						sos.siodrum(job.jobnum, job.jobsize, startingAddress, 0);
 						job.posInMemory = startingAddress;
 						swapIn = true;
@@ -226,7 +219,7 @@ public class os {
 				}
 			}
 			if (startingAddress == -1) {
-				for(int i = 0; i < IOQueue.size(); i++){
+				for (int i = 0; i < IOQueue.size(); i++) {
 					pcb job = IOQueue.get(i);
 					if (job.INMEMORY && !job.DOINGIO && job.BLOCKED) {
 						sos.siodrum(job.jobnum, job.jobsize, job.posInMemory, 1);
