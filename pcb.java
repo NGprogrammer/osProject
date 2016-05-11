@@ -2,7 +2,6 @@
  * This is the PCB class, progress control block.
  */
 public class pcb {
-
 	public int jobnum;
 	public int priority;
 	public int jobsize;
@@ -19,7 +18,7 @@ public class pcb {
 	public boolean BLOCKED;
 	public boolean KILL;
 	public boolean REQUESTIO;
-	/*
+	/**
 	 * This function initialize the variables above
 	 */
 	public pcb(int [] arr) {

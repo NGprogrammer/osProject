@@ -31,7 +31,6 @@ public class memorymanager {
 		fsTable.clear(); // Clears the contents of the FST
 		int FSbegin = -1;
 		int FSend = -1;
-		/* Loop to find where the free space begins and the size of it */
 		for (int i = 0; i < MAX_SIZE; i++) {
 			if (memory.get(i) == 0) {
 				FSbegin = i;
@@ -39,15 +38,17 @@ public class memorymanager {
 				for (int j = i; j < MAX_SIZE; j++) {
 					if (memory.get(j) == 0)
 						FSend = j;
-					else if (memory.get(j) == 1) { // End of free space
-						break; // Break out because it found the end of free space
+					else if(memory.get(j) == 1){ //End of free space
+						break; //Break out because it found the end of free space
 					}
 				}
-				i = FSend; // Set i to the end of free space so it can look for the next one
+				i = FSend; //To move i to the end of free space so it can look for the next one
 			}
-			/* Place the free space onto the table */
 			if (FSbegin != -1 && FSend != -1) {
-				fsTable.put(FSend-FSbegin+1, FSbegin);
+				fsTable.put(FSbegin, FSend-FSbegin+1); //The second value is not the end of free space but the size of it
+				//break; Got rid of this because if there were more free spaces then it
+				//would not find them if you break after you find the first one
+				//example 0000110000 if you break after finding first 4 then you won't get to the last 4
  			}
 		}
 	}
@@ -59,8 +60,8 @@ public class memorymanager {
 	 */
 	public int findFreeSpace(int jobSize) {
 		for (Map.Entry<Integer, Integer> entry : fsTable.entrySet()) {
-			if (entry.getKey() >= jobSize)
-				return entry.getValue();
+			if (entry.getValue() >= jobSize)
+				return entry.getKey();
 		}
 		return -1;
 	}
