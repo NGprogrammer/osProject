@@ -8,7 +8,11 @@ public class os {
 	public static memorymanager memory;
 	public static boolean swapIn, swapOut, doingIO;
 
-	/* Initializing the system variables declared above */
+	/**
+	 *  Startup()
+	 *  This is also the first function called by the SOS class
+	 *  Initializing the system variables declared above
+	 */
 	public static void startup() {
 		jobtable = new ArrayList<>(50);
 		memory = new memorymanager();
@@ -18,14 +22,20 @@ public class os {
 		sos.offtrace();
 	}
 
-	/* Indicates a new job has arrived on the drum */
+	/**
+	 * Crint()
+	 * Indicates a new job has arrived on the drum
+	 */
 	public static void Crint(int []a, int []p) {
 		bookKeep(p[5]);
 		jobtable.add(new pcb(p));
 		runOnCPU(a, p);
 	}
 
-	/* Disk interrupt, finish I/O */
+	/**
+	 * Disk interrupt,
+	 * Finishes I/O and notifies that I/O is done
+	 */
 	public static void Dskint(int []a, int []p) {
 		bookKeep(p[5]);
 		doingIO = false;
@@ -39,6 +49,12 @@ public class os {
 		runOnCPU(a, p);
 	}
 
+	/**
+	 * Drum Interrupt,
+	 * Transfer between drum and memory completed,
+	 * a boolean value changed to indicate the drum is free or not free
+	 * to swap in and out another job from the jobtable to the readyQueue
+	 */
 	public static void Drmint(int []a, int []p) {
 		bookKeep(p[5]);
 		if (swapIn) {
@@ -64,7 +80,11 @@ public class os {
 		runOnCPU(a, p);
 	}
 
-	/* Occurs when a job is to be terminated */
+	/**
+	 * Times Run Out,
+	 * Timer interrupt,
+	 * Occurs when a job is to be terminated
+	 */
 	public static void Tro(int[] a, int []p) {
 		int interruptedJobPos = bookKeep(p[5]);
 		pcb interruptedJob = jobtable.get(interruptedJobPos);
@@ -103,6 +123,11 @@ public class os {
 		runOnCPU(a, p);
 	}
 
+	/**
+	 * bookKeep()
+	 * This function calculates how much time an interrupted running job spend on CPU
+	 * The time is subtracted from the maxCPUTime and also returns position of interrrupted running job
+	 */
 	public static int bookKeep(int currTime) {
 		int runningJobPos = findRunningJob();
 		if (runningJobPos != -1 && jobtable.get(runningJobPos).RUNNING) {
@@ -115,7 +140,12 @@ public class os {
 		return runningJobPos; // -1 if no running job
 	}
 
-	/* Assigns the info from CPUScheduler so that the sos can run the job */
+	/**
+	 *  runOnCPU()
+	 *  Assigns the info from CPUScheduler so that the sos can run the job
+	 *  the job is selected in the readyQueue that will be next to run on the CPU,
+	 *  if there is  no current job to run on the CPU it will IDLE
+	 */
 	public static void runOnCPU(int[] a, int[] p) {
 		Swapper();
 		int jobTablePos = CPUScheduler();
@@ -132,7 +162,10 @@ public class os {
 		}
 	}
 
-	/* function to allow the job to do IO */
+	/**
+	 *  runIO()
+	 *  function to allow the job to do IO
+	 */
 	public static void runIO() {
 		if (!doingIO) {
 			if (!IOQueue.isEmpty()) {
@@ -150,7 +183,10 @@ public class os {
 		}
 	}
 
-	/* If a job is currently running, return the address of that job */
+	/**
+	 * findRunningJob()
+	 * If a job is currently running, return the address of that job
+	 */
 	public static int findRunningJob() {
 		int jobtablePos = -1;
 		for (int i = 0; i < jobtable.size(); i++) {
@@ -160,7 +196,10 @@ public class os {
 		return jobtablePos;
 	}
 
-	/* Locate job that is doing io */
+	/**
+	 * findIOJob()
+	 * Locate job that is doing io
+	 */
 	public static int findIOJob() {
 		int jobtablePos = -1;
 		for (int i = 0; i < jobtable.size(); i++) {
@@ -170,7 +209,9 @@ public class os {
 		return jobtablePos;
 	}
 
-	/* Locates the position of the job in the job table */
+	/**
+	 * Locates the position of the job in the job table
+	 */
 	public static int findJobTablePos(int jobNum) {
 		for (int i = 0; i < jobtable.size(); i++) {
 			if (jobtable.get(i).jobnum == jobNum)
@@ -179,7 +220,11 @@ public class os {
 		return -1;
 	}
 
-	/* Determines which job to run on the CPU that is ready to run */
+	/**
+	 * CPUScheduler()
+	 * Will use Shortest Remaining Time for our CPUScheduling to
+	 * determined which job to run on the CPU that is ready to run
+ 	 */
 	public static int CPUScheduler() {
 		int shortestRemainingTime = 999999;
 		int shortestJobPos = -1;
@@ -199,9 +244,11 @@ public class os {
 		}
 	}
 
-	/* Determines if job is not in memory to be placed in memory
- 	 * Also swap jobs out which are idle for another job
- 	*/
+	/**
+	 * Swapper()
+	 * Determines if job is not in memory to be placed in memory
+	 * Also swap jobs out which are idle for another job
+	 */
 	public static void Swapper() {
 		int startingAddress = -1;
 		if (!swapIn && !swapOut) {
@@ -234,7 +281,10 @@ public class os {
 		}
 	}
 
-	/* Occurs when a job is finished or request to be terminated */
+	/**
+	 * TerminateJob()
+	 * Occurs when a job is finished or request to be terminated
+	 */
 	public static void terminateJob(int jobTablePos) {
 		pcb Job = jobtable.get(jobTablePos);
 		memory.removeFromMemory(Job.posInMemory, Job.jobsize);

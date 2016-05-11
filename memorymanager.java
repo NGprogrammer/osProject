@@ -1,4 +1,6 @@
-/*	The memory manager class is a representation of Free Space Tables */
+/**
+ * The memory manager class is a representation of Free Space Tables
+ */
 
 import java.util.Collections;
 import java.util.ArrayList;
@@ -10,13 +12,19 @@ public class memorymanager {
 	private ArrayList<Integer> memory;
 	private TreeMap<Integer, Integer> fsTable;
 
+	/**
+	 * memorymanager()
+	 * Initialize memory with 0's representing free space
+	 */
 	public memorymanager() {
 		/* Initialize memory with 0's representing free space */
 		memory = new ArrayList<Integer>(Collections.nCopies(MAX_SIZE, 0));
 		fsTable = new TreeMap<>();
 	}
 
-	/* Locates where in memory there is free space and puts the free space size
+	/**
+	 * fillFreeSpaceTable()
+	 * Locates where in memory there is free space and puts the free space size
 	 * as the key and the address of the free space as the value.
 	 */
 	private void fillFreeSpaceTable() {
@@ -44,7 +52,9 @@ public class memorymanager {
 		}
 	}
 
-	/* Determines if there is enough space for the current job size
+	/**
+	 * findFreeSpace()
+	 * Determines if there is enough space for the current job size
 	 * If so, return the starting address else return -1 (not enough space)
 	 */
 	public int findFreeSpace(int jobSize) {
@@ -55,7 +65,9 @@ public class memorymanager {
 		return -1;
 	}
 
-	/* Process of allocating memory for the current jobSize */
+	/**
+	 * Process of allocating memory for the current jobSize
+	 */
 	public int allocateMemory(int jobSize) {
 		// Before allocating memory we call this function determine where there is free space
 		fillFreeSpaceTable();
@@ -69,7 +81,8 @@ public class memorymanager {
 		return -1;
 	}
 
-	/* If a job is terminated then this function is called to reset the memory
+	/**
+	 * If a job is terminated then this function is called to reset the memory
 	 * so it can be used by other jobs
 	 */
 	public void removeFromMemory(int addressInMemory, int jobSize) {
