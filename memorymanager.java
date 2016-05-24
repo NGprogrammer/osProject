@@ -44,12 +44,8 @@ public class memorymanager {
 				}
 				i = FSend; //To move i to the end of free space so it can look for the next one
 			}
-			if (FSbegin != -1 && FSend != -1) {
-				fsTable.put(FSbegin, FSend-FSbegin+1); //The second value is not the end of free space but the size of it
-				//break; Got rid of this because if there were more free spaces then it
-				//would not find them if you break after you find the first one
-				//example 0000110000 if you break after finding first 4 then you won't get to the last 4
- 			}
+			if (FSbegin != -1 && FSend != -1)
+				fsTable.put(FSbegin, FSend-FSbegin+1);
 		}
 	}
 

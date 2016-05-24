@@ -51,8 +51,8 @@ public class os {
 	/**
 	 * Drum Interrupt,
 	 * Transfer between drum and memory completed,
-	 * a boolean value changed to indicate the drum is free or not free
-	 * to swap in and out another job from the jobtable to the readyQueue
+	 * a boolean value changed to indicate if there are any swaps happening
+	 * to swap in and out another job from the drum to memory
 	 */
 	public static void Drmint(int []a, int []p) {
 		bookKeep(p[5]);
@@ -69,7 +69,7 @@ public class os {
 		if (swapOut) {
 			swapOut = false;
 			for (int i = 0; i < jobtable.size(); i++) {
-				if (jobtable.get(i).SWAPPING){
+				if (jobtable.get(i).SWAPPING) {
 					jobtable.get(i).SWAPPING = false;
 					jobtable.get(i).INMEMORY = false;
 					break;
@@ -95,6 +95,14 @@ public class os {
 		}
 		runOnCPU(a, p);
 	}
+
+	/**
+	 * Occurs when sos issues a command to be done
+	 * 5 means the job is requesting to be killed (can't be killed if doing I/O)
+	 * 6 means the job is requesting to do I/O
+	 * 7 means the job is requesting to be blocked
+	 */
+
 
 	public static void Svc(int[] a, int []p) {
 		int posInterruptedJob = bookKeep(p[5]);
@@ -148,7 +156,7 @@ public class os {
 	public static void runOnCPU(int[] a, int[] p) {
 		Swapper();
 		int jobTablePos = CPUScheduler();
-		if(jobTablePos != -1 && !jobtable.get(jobTablePos).BLOCKED) {
+		if (jobTablePos != -1 && !jobtable.get(jobTablePos).BLOCKED) {
 			pcb jobToRun = jobtable.get(jobTablePos);
 			a[0] = 2;
 			p[2] = jobToRun.posInMemory;
@@ -264,10 +272,12 @@ public class os {
 					}
 				}
 			}
+			// Occurs if the jobtable is full
 			if (startingAddress == -1) {
 				for (int i = 0; i < IOQueue.size(); i++) {
 					pcb job = IOQueue.get(i);
-					if (job.INMEMORY && !job.DOINGIO && job.BLOCKED) {
+					// Swaps out the job in the jobtable that isn't doing I/O and not blocked
+					if (job.INMEMORY && !job.DOINGIO && !job.BLOCKED) {
 						sos.siodrum(job.jobnum, job.jobsize, job.posInMemory, 1);
 						memory.removeFromMemory(job.posInMemory, job.jobsize);
 						swapOut = true;
